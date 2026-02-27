@@ -11,6 +11,7 @@ function normalizeText(text: string): string {
 }
 
 const WORD_ALIASES: Record<string, string[]> = {
+  // Existing — Agile / Tech
   'ci/cd': ['ci cd', 'cicd', 'continuous integration continuous delivery'],
   'mvp': ['minimum viable product'],
   'roi': ['return on investment'],
@@ -18,6 +19,17 @@ const WORD_ALIASES: Record<string, string[]> = {
   'devops': ['dev ops', 'dev-ops'],
   'a/b test': ['a b test', 'ab test', 'split test'],
   'wip limit': ['work in progress limit', 'wip'],
+  // Video Games — acronyms the speech API expands or varies
+  'gg': ['good game'],
+  'pvp': ['player vs player', 'player versus player'],
+  'dlc': ['downloadable content', 'd l c'],
+  'xp': ['experience points', 'x p'],
+  'co-op': ['co op', 'coop', 'cooperative'],
+  'power-up': ['power up'],
+  'speedrun': ['speed run'],
+  // Fruits — compound words the speech API may split
+  'starfruit': ['star fruit'],
+  'jackfruit': ['jack fruit'],
 };
 
 export function detectWords(
