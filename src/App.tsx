@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import type { GameState, CategoryId } from './types';
 import { generateCard } from './lib/cardGenerator';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import { LandingPage } from './components/LandingPage';
 import { CategorySelect } from './components/CategorySelect';
 import { GameBoard } from './components/GameBoard';
@@ -21,12 +21,15 @@ const INITIAL_GAME: GameState = {
 };
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('landing');
-  const [game, setGame] = useState<GameState>(INITIAL_GAME);
+  const [screen, setScreen, clearScreen] = useLocalStorage<Screen>('mb-screen', 'landing');
+  const [game, setGame, clearGame] = useLocalStorage<GameState>('mb-game', INITIAL_GAME);
+
+  // Don't restore a mid-game listening state — user must re-enable mic
+  const restoredGame = game.status === 'playing' ? { ...game, isListening: false } : game;
 
   function handleCategorySelect(categoryId: CategoryId) {
     const card = generateCard(categoryId);
-    setGame({
+    const newGame: GameState = {
       status: 'playing',
       category: categoryId,
       card,
@@ -35,8 +38,9 @@ export default function App() {
       completedAt: null,
       winningLine: null,
       winningWord: null,
-      filledCount: 1, // free space
-    });
+      filledCount: 1,
+    };
+    setGame(newGame);
     setScreen('game');
   }
 
@@ -55,13 +59,14 @@ export default function App() {
   }
 
   function handleNewCard() {
+    clearGame();
+    clearScreen();
     setScreen('category');
-    setGame(INITIAL_GAME);
   }
 
   function handleHome() {
-    setScreen('landing');
-    setGame(INITIAL_GAME);
+    clearGame();
+    clearScreen();
   }
 
   return (
@@ -72,9 +77,9 @@ export default function App() {
       {screen === 'category' && (
         <CategorySelect onSelect={handleCategorySelect} onBack={handleHome} />
       )}
-      {screen === 'game' && game.card && (
+      {screen === 'game' && restoredGame.card && (
         <GameBoard
-          game={game}
+          game={restoredGame}
           setGame={setGame}
           onWin={handleWin}
           onNewCard={handleNewCard}
@@ -82,8 +87,8 @@ export default function App() {
       )}
       {screen === 'win' && (
         <WinScreen
-          game={game}
-          onPlayAgain={() => setScreen('category')}
+          game={restoredGame}
+          onPlayAgain={() => { clearGame(); setScreen('category'); }}
           onHome={handleHome}
         />
       )}
